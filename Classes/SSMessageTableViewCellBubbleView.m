@@ -35,21 +35,6 @@ static CGFloat screenScale = 0.0;
 static UIImage *photoPlaceholder = nil;
 
 
-@implementation CellImage
-
-@synthesize imageView;
-@synthesize size;
-@synthesize point;
-
-- (id)init {
-    if ( self = [super init] ) {
-        imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    }
-    return self;
-}
-
-@end
-
 @implementation SSMessageTableViewCellBubbleView
 
 @synthesize message;
@@ -217,8 +202,8 @@ static UIImage *photoPlaceholder = nil;
                         ci.point = point; ci.size = CGSizeMake(width, height);
                         [cellImages addObject:ci];
                         point.y += height + 10.0;
-                        __block id _ci = ci;
-                        __block id this = self;
+                        __weak CellImage *_ci = ci;
+                        __weak typeof(self) this = self;
                         [ci.imageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:photo]] placeholderImage:photoPlaceholder success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
                             ((CellImage *)_ci).imageView.image = image;
                             [((UIView *)this) setNeedsDisplay];
@@ -267,6 +252,7 @@ static UIImage *photoPlaceholder = nil;
 //	textFrame = CGRectMake(textX, kPaddingTop + kMarginTop, textSize.width, textSize.height);
 
 	[bubbleImage drawInRect:bubbleFrame];
+    
     if ( selected )
         [textSelectedColor set];
     else

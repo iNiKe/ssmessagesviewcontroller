@@ -8,18 +8,6 @@
 
 #import "SSMessageTableViewCell.h"
 
-@interface CellImage : NSObject
-{
-    UIImageView *imageView;
-    CGSize size;
-    CGPoint point;
-}
-@property (nonatomic, strong) UIImageView *imageView;
-@property (nonatomic, assign) CGSize size;
-@property (nonatomic, assign) CGPoint point;
-
-@end
-
 @interface SSMessageTableViewCellBubbleView : UIView {
 
     UIImage *bubbleImage;
