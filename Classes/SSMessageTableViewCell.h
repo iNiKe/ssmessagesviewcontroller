@@ -13,15 +13,17 @@ typedef enum {
 
 @class SSMessageTableViewCellBubbleView;
 
-@interface SSMessageTableViewCell : UITableViewCell {
-
-@private
-	
-	SSMessageTableViewCellBubbleView *_bubbleView;
+@interface SSMessageTableViewCell : UITableViewCell 
+{
+    BOOL isChat;
 }
 
-@property (nonatomic, copy) NSString *messageText;
-@property (nonatomic, assign) SSMessageStyle messageStyle;
+@property (nonatomic, strong) VKMessage *message;
+@property (nonatomic, strong) UILabel *timeLabel;
+@property (nonatomic, strong) UIImageView *avatarImageView;
+@property (nonatomic, assign) BOOL isChat, isRead;
+@property (nonatomic, assign) CGSize bubbleSize;
+@property (nonatomic, strong) SSMessageTableViewCellBubbleView *bubbleView;
 
 - (void)setBackgroundImage:(UIImage *)backgroundImage forMessageStyle:(SSMessageStyle)messsageStyle;
 

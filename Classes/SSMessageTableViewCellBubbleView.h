@@ -8,23 +8,39 @@
 
 #import "SSMessageTableViewCell.h"
 
+@interface CellImage : NSObject
+{
+    UIImageView *imageView;
+    CGSize size;
+    CGPoint point;
+}
+@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, assign) CGSize size;
+@property (nonatomic, assign) CGPoint point;
+
+@end
+
 @interface SSMessageTableViewCellBubbleView : UIView {
 
+    UIImage *bubbleImage;
+    NSString *timeText;
+    CGSize timeSize;
+    NSMutableArray *cellImages;
 @private
 	
-	NSString *_messageText;
-	UIImage *_leftBackgroundImage;
-	UIImage *_rightBackgroundImage;
-	SSMessageStyle _messageStyle;
 }
 
-@property (nonatomic, copy) NSString *messageText;
-@property (nonatomic, retain) UIImage *leftBackgroundImage;
-@property (nonatomic, retain) UIImage *rightBackgroundImage;
-@property (nonatomic, assign) SSMessageStyle messageStyle;
+@property (nonatomic, strong) VKMessage *message;
+@property (nonatomic, strong) UIImage *bubbleImage;
+@property (nonatomic, assign) CGRect bubbleFrame, textFrame;
+@property (nonatomic, assign) CGSize bubbleSize, textSize;
+@property (nonatomic, assign) CGFloat textX;
+@property (nonatomic, assign) BOOL selected, isChat;
 
-+ (CGSize)textSizeForText:(NSString *)text;
-+ (CGSize)bubbleSizeForText:(NSString *)text;
-+ (CGFloat)cellHeightForText:(NSString *)text;
++ (CGSize)textSizeForMessage:(VKMessage *)msg;
++ (CGSize)bubbleSizeForMessage:(VKMessage *)msg;
++ (CGFloat)cellHeightForMessage:(VKMessage *)msg;
+- (void)updateMessageBubble;
+- (BOOL)hasMessageAtLocation:(CGPoint)location;
 
 @end
