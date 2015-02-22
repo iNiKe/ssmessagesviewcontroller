@@ -193,6 +193,8 @@ static UIImage *photoPlaceholder = nil;
                 else if ( [type caseInsensitiveCompare:kVKAttachPhoto] == NSOrderedSame ) {
                     NSString *photo = nil;
                     NSDictionary *attachImage = [VKAttachments photoForAttach:[a objectForKey:kVKAttachPhoto]];
+                    if ( !isDictionaryOk(attachImage) )
+                        attachImage = [a objectForKey:kVKAttachPhoto];
                     if ( isDictionaryOk(attachImage) ) {
                         photo = [attachImage objectForKey:kVKAttachSrc];
                         height = [[attachImage objectForKey:kVKAttachHeight] intValue];
@@ -204,6 +206,7 @@ static UIImage *photoPlaceholder = nil;
                         point.y += height + 10.0;
                         __weak CellImage *_ci = ci;
                         __weak typeof(self) this = self;
+                        ci.imageView = [[UIImageView alloc] initWithImage:photoPlaceholder];
                         [ci.imageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:photo]] placeholderImage:photoPlaceholder success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
                             ((CellImage *)_ci).imageView.image = image;
                             [((UIView *)this) setNeedsDisplay];

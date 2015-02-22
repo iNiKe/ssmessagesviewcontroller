@@ -294,16 +294,8 @@
 }
 
 - (void)dealloc {
-    //	self.leftBackgroundImage = nil;
-    //	self.rightBackgroundImage = nil;
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIKeyboardWillShowNotification
-                                                  object:nil];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIKeyboardWillHideNotification
-                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     [self removeAttachmentsView];
     [self pad_dealloc];
     @try {
@@ -315,14 +307,12 @@
 - (void)handleTapGesture:(UITapGestureRecognizer *)tapGesture {
     [self stopReceivingTiltUpdates];
     SSMessageTableViewCell *cell = (SSMessageTableViewCell *)tapGesture.view;
-    if (selectedIndexPath)
-    {
+    if (selectedIndexPath) {
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
         [cell setSelected:NO animated:YES];
         selectedIndexPath = nil;
     }
-    if ([UIKeyboardListener isVisible])
-    {
+    if ([UIKeyboardListener isVisible]) {
         [self resignTextView];
         return;
     }
