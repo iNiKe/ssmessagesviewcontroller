@@ -7,6 +7,7 @@
 //
 
 #import "SSMessageTableViewCell.h"
+#import "VKAttachments.h"
 
 @interface SSMessageTableViewCellBubbleView : UIView {
 
@@ -14,8 +15,9 @@
     NSString *timeText;
     CGSize timeSize;
     NSMutableArray *cellImages;
+    CGPoint _timeDrawOffset;
+    CGPoint _imageDrawOffset;
 @private
-	
 }
 
 @property (nonatomic, strong) VKMessage *message;
@@ -30,5 +32,6 @@
 + (CGFloat)cellHeightForMessage:(VKMessage *)msg;
 - (void)updateMessageBubble;
 - (BOOL)hasMessageAtLocation:(CGPoint)location;
+- (CellImage *)cellImageAtLocation:(CGPoint)location;
 
 @end

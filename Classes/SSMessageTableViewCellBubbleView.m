@@ -9,7 +9,6 @@
 #import "SSMessageTableViewCellBubbleView.h"
 #import "NKUtils.h"
 #import "NKDates.h"
-#import "VKAttachments.h"
 
 static UIFont *textFont = nil;
 static UIFont *timeFont = nil;
@@ -154,6 +153,7 @@ static UIImage *photoPlaceholder = nil;
         int height = 0, width = 0;
         for ( NSDictionary *a in newMessage.attachments )
             if ( isDictionaryOk(a) ) {
+                NSString *photo = nil; NSDictionary *attachImage = nil;
                 NSString *type = [a objectForKey:kVKAttachType];
                 if ( [type caseInsensitiveCompare:kVKAttachDocument] == NSOrderedSame ) {
                     // TODO: Document attacment
@@ -168,62 +168,69 @@ static UIImage *photoPlaceholder = nil;
                     // TODO: Wall attacment
                 }
                 else if ( [type caseInsensitiveCompare:kVKAttachSticker] == NSOrderedSame ) {
-                    // TODO: Sticker attacment
-                    NSDictionary *d = [a objectForKey:kVKAttachSticker];
-                    if ( isDictionaryOk(d) ) {
+                    // DONE: Sticker attacment
+                    attachImage = [a objectForKey:kVKAttachSticker];
+                    if ( isDictionaryOk(attachImage) ) {
                         self->message.bubbleInvisible = YES;
-                        NSString *photo = [d objectForKey:@"photo_256"];
-                        height = [[d objectForKey:kVKAttachHeight] intValue];
-                        width  = [[d objectForKey:kVKAttachWidth]  intValue];
-                        if (screenScale == 2.0) { height /= 2.0; width /= 2.0; }
-                        CellImage *ci = [[CellImage alloc] init];
-                        ci.point = point; ci.size = CGSizeMake(width, height);
-                        [cellImages addObject:ci];
-                        point.y += height;
-                        __block id _ci = ci;
-                        __block id this = self;
-                        
-                        [ci.imageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:photo]] placeholderImage:photoPlaceholder success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
-                            ((CellImage *)_ci).imageView.image = image;
-                            [((UIView *)this) setNeedsDisplay];
-                        } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
-                        }];
+                        photo = [attachImage objectForKey:@"photo_256"];
                     }
                 }
                 else if ( [type caseInsensitiveCompare:kVKAttachPhoto] == NSOrderedSame ) {
-                    NSString *photo = nil;
-                    NSDictionary *attachImage = [VKAttachments photoForAttach:[a objectForKey:kVKAttachPhoto]];
+                    attachImage = [VKAttachments photoForAttach:[a objectForKey:kVKAttachPhoto]];
                     if ( !isDictionaryOk(attachImage) )
                         attachImage = [a objectForKey:kVKAttachPhoto];
                     if ( isDictionaryOk(attachImage) ) {
                         photo = [attachImage objectForKey:kVKAttachSrc];
-                        height = [[attachImage objectForKey:kVKAttachHeight] intValue];
-                        width =  [[attachImage objectForKey:kVKAttachWidth]  intValue];
-                        if (screenScale == 2.0) { width /= 2; height /= 2; }
-                        CellImage *ci = [[CellImage alloc] init];
-                        ci.point = point; ci.size = CGSizeMake(width, height);
-                        [cellImages addObject:ci];
-                        point.y += height + 10.0;
-                        __weak CellImage *_ci = ci;
-                        __weak typeof(self) this = self;
-                        ci.imageView = [[UIImageView alloc] initWithImage:photoPlaceholder];
-                        [ci.imageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:photo]] placeholderImage:photoPlaceholder success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
-                            ((CellImage *)_ci).imageView.image = image;
-                            [((UIView *)this) setNeedsDisplay];
-                        } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
-                        }];
                     }
                 }
                 else {
 //                    DLog(@"%@: %@",type,a);
 //                    sz.height += 20;
                 }
-            }
+                
+                if (isDictionaryOk(attachImage)) {
+                    height = [[attachImage objectForKey:kVKAttachHeight] intValue];
+                    width =  [[attachImage objectForKey:kVKAttachWidth]  intValue];
+                    if (screenScale == 2.0) { width /= 2; height /= 2; }
+                    CellImage *ci = [[CellImage alloc] init];
+                    ci.frame = CGRectMake(point.x, point.y, width, height);
+                    ci.index = cellImages.count;
+                    [cellImages addObject:ci];
+                    point.y += height + 10.0;
+                    __weak CellImage *_ci = ci;
+                    __weak typeof(self) this = self;
+                    ci.imageView = [[UIImageView alloc] initWithImage:photoPlaceholder];
+                    [ci.imageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:photo]] placeholderImage:photoPlaceholder success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                        _ci.imageView.image = image;
+/*
+                        _ci.imageView.alpha = 0.0;
+                        [UIImageView beginAnimations:@"FadeInOut" context:nil];
+                        [UIImageView setAnimationDuration:0.25f];
+                        [UIImageView setAnimationCurve:UIViewAnimationCurveEaseIn];
+                        _ci.imageView.alpha = 1.0;
+                        [UIImageView commitAnimations];
+*/
+                        [this setNeedsDisplay];
+                    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+                    }];
+                }
+        }
+        
     }
     
     [self updateMessageBubble];
-//    [self setNeedsDisplay];
     [self setNeedsLayout];
+}
+
+- (CellImage *)cellImageAtLocation:(CGPoint)location {
+    // DONE: Get CellImage at given location
+    for (CellImage *i in cellImages) {
+        CGRect imageRect = CGRectMake(_imageDrawOffset.x + i.frame.origin.x, i.frame.origin.y, i.frame.size.width, i.frame.size.height);
+        if (CGRectContainsPoint(imageRect, location)) {
+            return i;
+        }
+    }
+    return nil;
 }
 
 - (BOOL)hasMessageAtLocation:(CGPoint)location {
@@ -271,32 +278,11 @@ static UIImage *photoPlaceholder = nil;
 
     [message.body drawInRect:textFrame withAttributes:@{NSFontAttributeName:textFont, NSParagraphStyleAttributeName:textStyle}];
     
-    CGPoint xy;
-// fix 2014/05/07
-    SSMessageTableViewCell *cell = (SSMessageTableViewCell *)[self findSuperViewWithClass:[UITableViewCell class]];
-    CGFloat cw = cell.contentView.frame.size.width;
-    if ( message.messageRightAlign ) {
-        xy.x = cw - 5 - bubbleSize.width - timeSize.width;
-        if ( isChat ) xy.x -= chatOfs;
-    }
-    else {
-        xy.x = bubbleSize.width + 5;
-        if ( isChat ) xy.x += chatOfs;
-    }
-    xy.y = self.frame.size.height - 24;
     [timeColor set];
+    [timeText drawAtPoint:_timeDrawOffset withAttributes:@{NSFontAttributeName:timeFont,NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
     
-    [timeText drawAtPoint:xy withAttributes:@{NSFontAttributeName:timeFont,NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
     for ( CellImage *ci in cellImages ) {
-        xy = ci.point;
-        if ( message.messageRightAlign ) {
-            if ( isChat ) xy.x -= chatOfs;
-            xy.x = cw - bubbleSize.width + 12;
-        }
-        else {
-            xy.x = 15;
-            if ( isChat ) xy.x += chatOfs;
-        }
+        CGPoint xy = CGPointMake(_imageDrawOffset.x + ci.frame.origin.x, ci.frame.origin.y);
         [ci.imageView.image drawAtPoint:xy];
     }
 }
@@ -318,8 +304,28 @@ static UIImage *photoPlaceholder = nil;
             bubbleFrame.origin.x += chatOfs; 
         }
     }
-//    if ( self.message.chatId > 0 )
-//        DLog(@".");
+    SSMessageTableViewCell *cell = (SSMessageTableViewCell *)[self findSuperViewWithClass:[UITableViewCell class]];
+    CGFloat cw = cell.contentView.frame.size.width;
+
+    // fix 2014/05/07
+    if ( message.messageRightAlign ) {
+        _timeDrawOffset.x = cw - 5 - bubbleSize.width - timeSize.width;
+        if ( isChat ) _timeDrawOffset.x -= chatOfs;
+    }
+    else {
+        _timeDrawOffset.x = bubbleSize.width + 5;
+        if ( isChat ) _timeDrawOffset.x += chatOfs;
+    }
+    _timeDrawOffset.y = self.frame.size.height - 24;
+
+    if ( message.messageRightAlign ) {
+        if ( isChat ) _imageDrawOffset.x -= chatOfs;
+        _imageDrawOffset.x = cw - bubbleSize.width + 12;
+    }
+    else {
+        _imageDrawOffset.x = 15;
+        if ( isChat ) _imageDrawOffset.x += chatOfs;
+    }
     [self setNeedsDisplay];
 }
 

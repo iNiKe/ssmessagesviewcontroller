@@ -18,6 +18,10 @@
 #import "UIKeyboardListener.h"
 #import "PhotosViewController.h"
 #import "AppDelegate.h"
+#import "MsgViewController.h"
+
+#import "VKAttachments.h"
+#import "ProfileVQViewController.h"
 
 #define kInputHeight            40.0f
 #define kDurationUp             0.35f
@@ -33,8 +37,7 @@
 @implementation HPGrowingTextView (NKUtils)
 
 - (void)appendString:(NSString *)string {
-    if ( isStringOk(string) )
-    {
+    if ( isStringOk(string) ) {
         if ( isStringOk(self.text) )
             self.text = [NSString stringWithFormat:@"%@ %@", self.internalTextView.text,string];
         else
@@ -76,18 +79,10 @@
 
 - (id)init {
     self = [super init];
-    if(self){
+    if (self) {
         [self pad_init];
-        //    [[self tableView] setPagingEnabled:YES];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(keyboardWillShow:)
-                                                     name:UIKeyboardWillShowNotification
-                                                   object:nil];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(keyboardWillHide:)
-                                                     name:UIKeyboardWillHideNotification 
-                                                   object:nil];		
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     }
     
     return self;
@@ -108,14 +103,10 @@
 	// Table view
 	_tableView = [[UITableView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, size.width, size.height - kInputHeight) style:UITableViewStylePlain];
 	_tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    //	_tableView.backgroundColor = self.view.backgroundColor;
     _tableView.backgroundView = nil;
 	_tableView.backgroundColor = [UIColor clearColor];
-    //    _tableView.backgroundView = [[UIView alloc] initWithFrame:_tableView.frame];
-    //    _tableView.backgroundView.backgroundColor = [UIColor clearColor];
 	_tableView.dataSource = self;
 	_tableView.delegate = self;
-    //	_tableView.separatorColor = self.view.backgroundColor;
 	_tableView.separatorColor = [UIColor clearColor];
     
 	[self.view addSubview:_tableView];
@@ -128,15 +119,13 @@
     }
     [self updateTableViewInsetsWithBottomInset:0];
     
-//    self.view.backgroundColor = [UIColor colorWithRed:219.0f/255.0f green:226.0f/255.0f blue:237.0f/255.0f alpha:1];
-//    textView.internalTextView
     if ( self.tabBarController.tabBar && !self.hidesBottomBarWhenPushed )
         tabHeight = self.tabBarController.tabBar.frame.size.height;
     else
         tabHeight = 0;
     self.view.backgroundColor = lightBackgroundPatternColor();
-//	speechToText = [[SpeechToTextModule alloc] init];
-//    speechToText.delegate = self;
+    
+//	speechToText = [[SpeechToTextModule alloc] init]; speechToText.delegate = self;
     
     containerView = [[UIView alloc] initWithFrame:CGRectMake(0, size.height - kContainerViewHeight, width, kContainerViewHeight)];
     containerView.backgroundColor = [UIColor clearColor];
@@ -152,7 +141,6 @@
 	textView.font = [UIFont systemFontOfSize:15.0f];
 	textView.delegate = self;
     textView.internalTextView.scrollIndicatorInsets = UIEdgeInsetsMake(5.0, 0, 5.0, 0);
-//    textView.backgroundColor = [UIColor whiteColor];
     textView.backgroundColor = [UIColor clearColor];
     textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
@@ -167,9 +155,6 @@
         self.textView.internalTextView.autocorrectionType = UITextAutocorrectionTypeDefault;
     else
         self.textView.internalTextView.autocorrectionType = UITextAutocorrectionTypeNo;
-    
-    // textView.text = @"test\n\ntest";
-	// textView.animateHeightChange = NO; //turns off animation
     
     [self.view addSubview:containerView];
 	
@@ -250,15 +235,6 @@
     [self updateAttachmetsHeight];
     [self createAttachmentsView];
 
-/*    
-	if (_refreshHeaderView == nil)
-    {
-		EGORefreshTableHeaderView *view = [[EGORefreshTableHeaderView alloc] initWithFrame:CGRectMake(0.0f, _tableView.bounds.size.height*2, self.view.frame.size.width, _tableView.bounds.size.height)];
-		view.delegate = self;
-		[self.tableView addSubview:view];
-		_refreshHeaderView = view;
-	}
-*/	
     if (refreshFooterView == nil) {
         [self setupRefreshView];
     }
@@ -273,9 +249,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    //    makeVKNavigationBarBackgroundImage(self);
-    if (selectedIndexPath)
-    {
+    if (selectedIndexPath) {
         UITableViewCell *cell = [_tableView cellForRowAtIndexPath:selectedIndexPath];
         [cell setSelected:NO animated:YES];
         selectedIndexPath = nil;
@@ -289,7 +263,6 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    
     [self pad_stopReceivingTiltUpdates];
 }
 
@@ -322,12 +295,10 @@
         return;
     
     CGPoint location = [tapGesture locationInView:cell];
-    if (![cell.bubbleView hasMessageAtLocation:location])
-    {
+    if (![cell.bubbleView hasMessageAtLocation:location]) {
         return;
     }
-    else
-    {
+    else {
         selectedIndexPath = [_tableView indexPathForCell:cell];
         @try {
             [cell setSelected:YES animated:YES];
@@ -337,26 +308,35 @@
         @finally {
         }
         
-        NSArray *photos = [cell.message allPhotos];
-        if (isArrayOk(photos))
-        {
-            [PhotosViewController pushControllerWithPhotos:photos toController:self.navigationController startOnGrid:NO];
+        // DONE: If tap on avatar - open profile
+        for (UIView *v in cell.subviews) {
+            if ([v isKindOfClass:[UIImageView class]] && (CGRectContainsPoint(v.frame, location))) {
+                int userId = (int)v.tag;
+                if (userId > 0) {
+                    [ProfileVQViewController pushVQProfileControllerTo:self.navigationController userId:userId];
+                    return;
+                }
+            }
         }
-        else
-        {
-            UIViewController *vc = [[UIViewController alloc] init];
-            UIView *v = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-            UITextView *tv = [[UITextView alloc] initWithFrame:v.frame];
-            tv.editable = NO;
-            tv.dataDetectorTypes = UIDataDetectorTypeLink | UIDataDetectorTypeLink;
-            //    tv.text = cell.message.body;
-            tv.attributedText = [[NSAttributedString alloc] initWithString:cell.message.body];
-            tv.font = [UIFont systemFontOfSize:18.0];
-            tv.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
-            [v addSubview:tv];
-            vc.view = v;
-            //            [tv sizeToFit];
-            [self.navigationController pushViewController:vc animated:YES];
+        
+        int currentPhoto = -1;
+        NSArray *photos = [cell.message allPhotos];
+        if (isArrayOk(photos)) {
+            // DONE: Detect tapped photo and start viewing from it
+            location = [tapGesture locationInView:cell.bubbleView];
+            CellImage *image = [cell.bubbleView cellImageAtLocation:location];
+            if (image)
+                currentPhoto = (int)image.index;
+            else
+                currentPhoto = -1;
+        }
+        if (currentPhoto >= 0)
+            [PhotosViewController pushControllerWithPhotos:photos toController:self.navigationController startOnGrid:NO currentPhoto:currentPhoto];
+        else {
+            // DONE: Open message view controller
+            id controller = [MsgViewController msgViewControllerWithVKMessage:cell.message];
+            if (controller)
+                [self.navigationController pushViewController:controller animated:YES];
         }
     }
 }
