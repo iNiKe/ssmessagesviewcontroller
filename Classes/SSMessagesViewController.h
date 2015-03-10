@@ -65,7 +65,7 @@
     NSMutableString *attachmentsString;
     CLLocationCoordinate2D coordinates;
     VKContact *contact;
-    VKDialog *dialog;
+    VKMessage *dialog;
     NSDate *lastActivity;
     BOOL receivingTiltUpdates;
     __unsafe_unretained id pad_scrollView;
@@ -88,7 +88,7 @@
 @property (nonatomic, assign) int currentIndex, chatId, uid;
 @property (nonatomic, strong) NSMutableString *attachmentsString;
 @property (strong, nonatomic) VKContact *contact;
-@property (strong, nonatomic) VKDialog *dialog;
+@property (strong, nonatomic) VKMessage *dialog;
 @property (strong, nonatomic) NSMutableArray *messages;
 @property (strong, nonatomic) NSDate *lastActivity;
 

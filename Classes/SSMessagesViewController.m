@@ -722,7 +722,7 @@
             {
                 NSMutableDictionary *params = [NSMutableDictionary dictionary];
                 [params setObject:NI(self.chatId) forKey:@"chat_id"];
-                [params setObject:NI(c.userId) forKey:@"uid"];
+                [params setObject:NI(c.userId) forKey:kVKJUserId];
                 [VK runVKApiMethod:kVKMMessagesAddChatUser params:params doneBlock:^(VKApiResponse *apiResponse) {
                     DLog(@"%@", apiResponse.response);
                     //    NSNumber *response = [api.response objectForKey:kVKJResponse];
@@ -739,7 +739,7 @@
                 NSMutableDictionary *params = [NSMutableDictionary dictionary];
                 if ( title )
                     [params setObject:title forKey:@"title"];
-                [params setObject:uids forKey:@"uids"];
+                [params setObject:uids forKey:@"user_ids"];
                 [VK runVKApiMethod:kVKMMessagesCreateChat params:params doneBlock:^(VKApiResponse *apiResponse) {
                     DLog(@"%@", apiResponse.response);
                     if ( !apiResponse.error )
@@ -748,10 +748,10 @@
                         if ( isNumberOk(response) )
                         {
                             // TODO: Ковертация в беседу
-                            VKDialog *d = [[VKDialog alloc] init];
-                            d.chatId = [response intValue];
-                            d.usersCount = 3;
-                            self.chatId = d.chatId;
+                            VKMessage *d = [[VKMessage alloc] init];
+                            d.chat_id = [response intValue];
+                            d.users_count = 3;
+                            self.chatId = d.chat_id;
                             self.dialog = d;
                             
                             self.messages = [NSMutableArray array];
@@ -1320,10 +1320,10 @@
     VKMessage *message = [self messageForRowAtIndexPath:indexPath];
     cell.isChat = self.chatId > 0;
 	cell.message = message;
-    cell.isRead = message.isRead;
+    cell.isRead = message.read_state;
     if (!cell.isRead)
     {
-        DLog(@"isRead = %i (%i %@)",cell.message.isRead,cell.isRead,cell.message.body);
+        DLog(@"isRead = %i (%i %@)",cell.message.read_state,cell.isRead,cell.message.body);
     }
     // TODO: Mark as Read group of messages
     [message markAsReadWithOkBlock:^(BOOL ok) {
@@ -1444,7 +1444,7 @@
     {
         [VK markAsUnread:[NSString stringWithFormat:@"%i",cell.message.idx] okBlock:^(VKApiResponse *apiResponse, BOOL ok) {
             if (ok)
-                cell.message.isRead = NO;
+                cell.message.read_state = NO;
         }];
     }
 }

@@ -107,7 +107,7 @@ static UIColor *unreadColor = nil;
     bubbleView.isChat = self.isChat;
     if ( self.isChat ) {
         if ( !newMessage.contact )
-            newMessage.contact = [VK contactById:newMessage.fromId];
+            newMessage.contact = [VK contactById:newMessage.from_id];
         if ( newMessage.contact && newMessage.contact.photo ) {
             __block id this = self;
             __block id ava = avatarImageView;
@@ -123,7 +123,7 @@ static UIColor *unreadColor = nil;
         else
             avatarImageView.image = VKPlaceholderImage;
     }
-    [self setIsRead:newMessage.isRead];
+    [self setIsRead:newMessage.read_state];
 }
 
 - (void)setBackgroundImage:(UIImage *)backgroundImage forMessageStyle:(SSMessageStyle)messsageStyle {
