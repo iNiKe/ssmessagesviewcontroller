@@ -9,6 +9,7 @@
 #import "SSMessageTableViewCell.h"
 #import "SSMessageTableViewCellBubbleView.h"
 #import "NKUtils.h"
+#import "VKontakte.h"
 
 @implementation SSMessageTableViewCell
 
@@ -112,6 +113,12 @@ static UIColor *unreadColor = nil;
             __block id this = self;
             __block id ava = avatarImageView;
             avatarImageView.tag = newMessage.contact.userId;
+            [avatarImageView vm_setRoundedImageWithURL:newMessage.contact.photo success:^(UIImage *image) {
+                ((UIImageView *)ava).image = image;
+                [((SSMessageTableViewCell *)this) setNeedsDisplay];
+                [this setNeedsLayout];
+            }];
+/*
             [avatarImageView setImageWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:newMessage.contact.photo]] placeholderImage:VKPlaceholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
                 ((UIImageView *)ava).image = image;
                 [((SSMessageTableViewCell *)this) setNeedsDisplay];
@@ -119,6 +126,7 @@ static UIColor *unreadColor = nil;
             } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
                 
             }];
+*/
         }
         else
             avatarImageView.image = VKPlaceholderImage;

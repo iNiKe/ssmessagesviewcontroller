@@ -6,6 +6,8 @@
 //  Copyright 2010-2011 Sam Soffes. All rights reserved.
 //
 
+#import "VKMessage.h"
+
 typedef enum {
 	SSMessageStyleLeft = 0,
 	SSMessageStyleRight = 1

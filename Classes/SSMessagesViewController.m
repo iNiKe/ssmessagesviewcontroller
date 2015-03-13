@@ -331,7 +331,7 @@
                 currentPhoto = -1;
         }
         if (currentPhoto >= 0)
-            [PhotosViewController pushControllerWithPhotos:photos toController:self.navigationController startOnGrid:NO currentPhoto:currentPhoto];
+            [PhotosViewController pushControllerWithPhotos:photos toController:self.navigationController startOnGrid:NO currentPhoto:currentPhoto fromView:cell.bubbleView];
         else {
             // DONE: Open message view controller
             id controller = [MsgViewController msgViewControllerWithVKMessage:cell.message];

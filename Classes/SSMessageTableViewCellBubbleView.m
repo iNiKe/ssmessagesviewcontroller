@@ -9,6 +9,8 @@
 #import "SSMessageTableViewCellBubbleView.h"
 #import "NKUtils.h"
 #import "NKDates.h"
+#import "UIImageView+AFNetworking.h"
+#import "VKontakte.h"
 
 static UIFont *textFont = nil;
 static UIFont *timeFont = nil;
